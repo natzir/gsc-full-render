@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hotels in Madrid · Shop Example</title>
+<link rel="canonical" href="https://www.shop.example/city/madrid.html">
+<link rel="stylesheet" href="https://static.shop.example/css/main.css">
+<link rel="preload" as="script" href="https://static.shop.example/js/app.js">
+<script src="https://static.shop.example/js/app.js"></script>
+<script>window.dataLayer = [];</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage"}</script>
+</head>
+<body>
+<header>
+  <a href="/" aria-label="Home"><svg width="80" height="20"><rect width="80" height="20"></rect></svg></a>
+  <nav>
+    <a href="/stays/">Stays</a>
+    <a href="https://flights.shop.example/">Flights</a>
+    <a href="/deals?aid=123&amp;label=home">Deals</a>
+    <a href="javascript:void(0)" onclick="openMenu()">Menu</a>
+  </nav>
+</header>
+<main>
+  <h1>Hotels in Madrid</h1>
+  <div data-testid="map" style="background-image:url(https://maps.googleapis.com/maps/api/staticmap?size=375x80&amp;zoom=13)"></div>
+  <ul class="carousel" style="display:flex;overflow-x:auto">
+    <li><a href="/hotel/sol.html"><img src="https://static.shop.example/img/sol.jpg" alt="Hotel Sol"></a></li>
+    <li><a href="/hotel/retiro.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="https://static.shop.example/img/retiro.jpg" alt="Hotel Retiro" loading="lazy"></a></li>
+    <li><a href="hotel/prado.html">Hotel Prado</a></li>
+  </ul>
+  <a href="#">Back to top</a>
+  <a href="">Empty</a>
+  <a>Anchor without href</a>
+  <div onclick="location.href='/offers/'">Offers</div>
+  <span data-href="/help/">Help</span>
+  <a href="https://www.partner.example/madrid" rel="sponsored nofollow">Partner</a>
+  <a href="//reviews.shop.example/madrid">Reviews</a>
+  <a href="mailto:help@shop.example">Email us</a>
+  <a href="/Guides/Madrid Centre">Madrid centre guide</a>
+</main>
+<footer><a href="/about/">About</a> <a href="/privacy/">Privacy</a></footer>
+<script>document.querySelector('.carousel');</script>
+</body></html>

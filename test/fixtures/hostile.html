@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html><head>
+<base href="/sub/">
+<meta http-equiv="refresh" content="0;url=https://evil.example/">
+<meta http-equiv="Content-Security-Policy" content="img-src 'none'">
+<SCRIPT>window.__pwned = 1</SCRIPT>
+<script type="module">window.__pwned = 2</script>
+<link rel="canonical" href="https://shop.example.com/cat/page">
+<meta name="Referrer" content="unsafe-url">
+</head>
+<body onload="window.__pwned = 3">
+<noscript><p>Enable JS</p></noscript>
+<img src="x" onerror="window.__pwned = 4">
+<a id="js" href="JaVaScRiPt:window.__pwned=5">js link</a>
+<a id="jsws" href=" java&#x09;script:window.__pwned=6">ws js link</a>
+<a id="tgt" href="/p" target="_self">self target</a>
+<iframe id="ifr" srcdoc="<script>parent.__pwned=7</script>" width="300" height="150"></iframe>
+<iframe src="https://www.youtube.com/embed/x"></iframe>
+<object data="javascript:window.__pwned=8"></object>
+<embed src="javascript:window.__pwned=9">
+<svg><script>window.__pwned = 10</script><a xlink:href="javascript:window.__pwned=11"><text>svg</text></a></svg>
+<form action="javascript:window.__pwned=12"><button formaction="javascript:window.__pwned=13">go</button></form>
+<div onclick="window.__pwned = 14">div click</div>
+<img id="lazy1" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-src="/img/a.jpg" data-srcset="/img/a.jpg 1x, /img/a2.jpg 2x" loading="lazy">
+<img id="lazy2" src="/img/real.jpg" data-src="/img/other.jpg">
+<img id="leaky" src="/img/leak.jpg" referrerpolicy="unsafe-url">
+<div id="dsd"><template shadowrootmode="open"><a href="https://evil.example/" target="_self">dsd</a></template><template shadowroot="closed"><p>old</p></template></div>
+</body></html>
