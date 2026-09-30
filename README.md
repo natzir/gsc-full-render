@@ -9,7 +9,7 @@ HTML Google rendered, right in the *Screenshot* tab, and lists all its links.
 ## Why
 
 - It uses the HTML Google rendered for that URL. Headless Chrome tools, and my own
-  [Puppeteer Colab](https://x.com/natzir9/status/1321441105800503296), can only imitate it.
+  [Puppeteer Colab (2020)](https://x.com/natzir9/status/1321441105800503296), can only imitate it.
 - You find odd URLs in the Pages report: inspect the pages that may link to them and look for the
   link in the list. You'll see where it is on the page and whether users can see it.
 - Audits: check that a link is in the rendered HTML, and whether it's nofollow, not crawlable,
