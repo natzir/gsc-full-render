@@ -18,7 +18,11 @@ HTML Google rendered, right in the *Screenshot* tab, and lists all its links.
 
 ## Install
 
-Open `dist/install.html` and drag the button to your bookmarks bar.
+1. Open [`dist/install.html`](dist/install.html) and download it with the *Download raw file*
+   button (⬇).
+2. Open the downloaded file in your browser.
+3. Drag the **GSC Full Render** button to your bookmarks bar. If you can't see the bar, show it
+   with Ctrl+Shift+B (⌘+Shift+B on a Mac).
 
 ## Use
 
