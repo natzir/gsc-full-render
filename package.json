@@ -1,12 +1,14 @@
 {
   "name": "gsc-full-render",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "vitest run",
     "build": "node scripts/build.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "pack": "npm run build && node scripts/pack.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
