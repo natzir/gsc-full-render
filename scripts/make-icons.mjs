@@ -1,7 +1,9 @@
 // Draws the extension icon as PNGs in extension/icons/: the natzir.com tools tile (Passage Lens
 // family) with the top of a page, a dashed line where Google's screenshot stops, and the page
 // going on below it in blue, which is what the full render adds. Shapes are in a 128 × 128 grid,
-// antialiased by 4 × 4 supersampling.
+// antialiased by 4 × 4 supersampling. The 128 px icon, the one the Chrome Web Store shows, has
+// 96 px of artwork and 16 px of transparent padding around it, as the store asks; the toolbar
+// sizes use the whole square.
 // Usage: npm run icons
 import { crc32, deflateSync } from 'node:zlib';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -28,7 +30,8 @@ const inside = (u, v, s) => {
   return dx * dx + dy * dy <= s.r * s.r;
 };
 
-export function iconPixel(x, y, size) {
+// One pixel of the artwork drawn at size × size.
+export function artPixel(x, y, size) {
   const n = 4;
   const sum = [0, 0, 0];
   let covered = 0;
@@ -47,6 +50,15 @@ export function iconPixel(x, y, size) {
   }
   if (!covered) return [0, 0, 0, 0];
   return [...sum.map(c => Math.round(c / covered)), Math.round((covered / (n * n)) * 255)];
+}
+
+const PADDING = { 128: 16 };
+
+export function iconPixel(x, y, size) {
+  const pad = PADDING[size] ?? 0;
+  const art = size - 2 * pad;
+  if (x < pad || y < pad || x >= pad + art || y >= pad + art) return [0, 0, 0, 0];
+  return artPixel(x - pad, y - pad, art);
 }
 
 function chunk(type, data) {
