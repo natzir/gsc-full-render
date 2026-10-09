@@ -54,6 +54,13 @@ export const TEXT = {
   unlocked: 'page scroll lock removed',
 };
 
+// The extension's icon does what the bookmark does: only the words that name it differ.
+export const EXTENSION_TEXT = {
+  ...TEXT,
+  on: 'Full render ON · click the extension icon again to turn it off',
+  blocked: 'Search Console blocked the extension: ',
+};
+
 // Search Console's reason, in plain words when it is one we can explain.
 export function explainReason(reason) {
   if (/robots\.txt/i.test(reason)) return TEXT.reasons.robots;

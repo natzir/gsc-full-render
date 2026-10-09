@@ -11,26 +11,44 @@ const STATE_KEY = '__gscFullRender';
 // accounts: https://search.google.com/u/1/search-console/inspect?…
 const URL_INSPECTION = /^https:\/\/search\.google\.com\/(?:u\/\d+\/)?search-console\/inspect(?:[/?#]|$)/;
 
-export function toggle(win = window) {
+// text: the bookmarklet's words (TEXT) or the extension icon's (EXTENSION_TEXT).
+export function toggle(win = window, text = TEXT) {
   const doc = win.document;
 
   if (win[STATE_KEY]) {
     win[STATE_KEY].teardown();
     delete win[STATE_KEY];
-    showToast(TEXT.off);
+    showToast(text.off);
     return 'off';
   }
 
   if (!URL_INSPECTION.test(win.location.href)) {
-    showToast(TEXT.notSearchConsole);
+    showToast(text.notSearchConsole);
     return 'refused';
   }
+
+  const result = start(win, text);
+  // On, but with nothing to show yet: say what to open (the view appears as soon as it opens).
+  if (result === 'on') showToast(findInspectionPanels(doc).some(isPanelOpen) ? text.on : text.onNoPanel);
+  return result;
+}
+
+// The extension's automatic start, on every Search Console page: it is a single-page app that
+// reaches URL Inspection without a page load, and the watcher only mounts on inspection panels.
+// Quiet, since a toast on each Search Console load would be noise; errors still show.
+export function autoStart(win = window, text = TEXT) {
+  if (win[STATE_KEY]) return 'running';
+  return start(win, text);
+}
+
+function start(win, text) {
+  const doc = win.document;
 
   let policy;
   try {
     policy = getPolicy(win);
   } catch (error) {
-    showToast(TEXT.blocked + error.message);
+    showToast(text.blocked + error.message);
     return 'blocked';
   }
 
@@ -63,7 +81,5 @@ export function toggle(win = window) {
       doc.querySelectorAll('[data-gfr-toast]').forEach(el => el.remove());
     },
   };
-  // On, but with nothing to show yet: say what to open (the view appears as soon as it opens).
-  showToast(findInspectionPanels(doc).some(isPanelOpen) ? TEXT.on : TEXT.onNoPanel);
   return 'on';
 }

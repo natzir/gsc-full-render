@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { toggle } from '../src/main.js';
-import { TEXT } from '../src/text.js';
+import { toggle, autoStart } from '../src/main.js';
+import { TEXT, EXTENSION_TEXT } from '../src/text.js';
 import { buildScPage, moreInfo } from './helpers/sc-page.js';
 
 const SC = 'https://search.google.com/search-console/inspect?resource_id=sc-domain%3Anatzir.com&id=x';
+const OVERVIEW = 'https://search.google.com/search-console?resource_id=sc-domain%3Anatzir.com';
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const toasts = () => [...document.querySelectorAll('[data-gfr-toast]')].map(t => t.shadowRoot.querySelector('.toast').textContent);
 const wins = [];
@@ -248,5 +249,73 @@ describe('toggle', () => {
     expect(first.shotPanel.querySelector(':scope > [data-gfr-host]')).toBeNull();
     // [id=…], not #p-shot: with two elements sharing that id, jsdom resolves #p-shot document-wide
     expect(newSide.querySelector('[id="p-shot"] > [data-gfr-host]')).not.toBeNull();
+  });
+});
+
+describe('autoStart', () => {
+  it('starts quietly and mounts the open panel', () => {
+    const { shotPanel } = buildScPage();
+    const win = fakeWin();
+    expect(autoStart(win, EXTENSION_TEXT)).toBe('on');
+    expect(toasts()).toEqual([]);
+    expect(shotPanel.querySelector(':scope > [data-gfr-host]')).not.toBeNull();
+  });
+
+  it('starts on any Search Console page and mounts once URL Inspection opens without a page load', async () => {
+    const win = fakeWin({ location: { href: OVERVIEW } });
+    expect(autoStart(win, EXTENSION_TEXT)).toBe('on');
+    const { shotPanel } = buildScPage();
+    await wait(100);
+    expect(shotPanel.querySelector(':scope > [data-gfr-host]')).not.toBeNull();
+    expect(toasts()).toEqual([]);
+  });
+
+  it('does nothing when it already runs, so starting again adds no second view', async () => {
+    const { shotPanel } = buildScPage();
+    const win = fakeWin();
+    autoStart(win, EXTENSION_TEXT);
+    const state = win.__gscFullRender;
+    expect(autoStart(win, EXTENSION_TEXT)).toBe('running');
+    expect(win.__gscFullRender).toBe(state);
+    await wait(100);
+    expect(shotPanel.querySelectorAll(':scope > [data-gfr-host]')).toHaveLength(1);
+  });
+
+  it('is turned off by the icon or by the bookmarklet, which share its state', () => {
+    buildScPage();
+    const win = fakeWin();
+    autoStart(win, EXTENSION_TEXT);
+    expect(toggle(win, EXTENSION_TEXT)).toBe('off');
+    expect(toasts()).toEqual([TEXT.off]);
+    autoStart(win, EXTENSION_TEXT);
+    expect(toggle(win)).toBe('off');
+    expect(win.__gscFullRender).toBeUndefined();
+  });
+
+  it('says so when Search Console blocks it, naming the extension', () => {
+    const win = fakeWin({ trustedTypes: { createPolicy() { throw new Error('nope'); } } });
+    expect(autoStart(win, EXTENSION_TEXT)).toBe('blocked');
+    expect(toasts()).toEqual([`${EXTENSION_TEXT.blocked}nope`]);
+    expect(win.__gscFullRender).toBeUndefined();
+  });
+});
+
+describe('toggle from the extension icon', () => {
+  it('names the icon, not the bookmarklet, when it turns on', () => {
+    buildScPage();
+    expect(toggle(fakeWin(), EXTENSION_TEXT)).toBe('on');
+    expect(toasts()).toEqual([EXTENSION_TEXT.on]);
+  });
+
+  it('still refuses outside URL Inspection', () => {
+    const win = fakeWin({ location: { href: OVERVIEW } });
+    expect(toggle(win, EXTENSION_TEXT)).toBe('refused');
+    expect(toasts()).toEqual([TEXT.notSearchConsole]);
+  });
+
+  it('shares every other text with the bookmarklet', () => {
+    expect(EXTENSION_TEXT.on).toBe('Full render ON · click the extension icon again to turn it off');
+    expect(EXTENSION_TEXT.blocked).toBe('Search Console blocked the extension: ');
+    expect({ ...EXTENSION_TEXT, on: TEXT.on, blocked: TEXT.blocked }).toEqual(TEXT);
   });
 });
