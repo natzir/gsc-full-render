@@ -1,8 +1,9 @@
 # Google Search Console Full Fetch & Render
 
-GSC Full Render for short. A bookmarklet for Search Console's URL Inspection. Google's screenshot
-stops at about 1,750 px and crawled pages don't have one. This rebuilds the whole page from the
-HTML Google rendered, right in the *Screenshot* tab, and lists all its links.
+GSC Full Render for short. A Chrome extension, and a bookmarklet, for Search Console's URL
+Inspection. Google's screenshot stops at about 1,750 px and crawled pages don't have one. This
+rebuilds the whole page from the HTML Google rendered, right in the *Screenshot* tab, and lists all
+its links.
 
 ![Scrolling through the full page in the Screenshot tab](docs/images/demo.gif)
 
@@ -18,6 +19,10 @@ HTML Google rendered, right in the *Screenshot* tab, and lists all its links.
 
 ## Install
 
+**Chrome extension.** In review for the Chrome Web Store. It turns on by itself in URL Inspection.
+
+**Bookmarklet**, if you'd rather not install an extension:
+
 1. Open [`dist/install.html`](dist/install.html) and download it with the *Download raw file*
    button (⬇).
 2. Open the downloaded file in your browser.
@@ -27,7 +32,11 @@ HTML Google rendered, right in the *Screenshot* tab, and lists all its links.
 ## Use
 
 1. In URL Inspection, open *View tested page* or *View crawled page*.
-2. Click the bookmark. The *Screenshot* tab shows the full page. Click it again to turn it off.
+2. The *Screenshot* tab shows the full page.
+   - With the extension it is already there. Its icon turns it off in that tab and on again. To
+     turn it on yourself each time, right-click the icon and uncheck *Turn on automatically in
+     URL Inspection*.
+   - With the bookmarklet, click the bookmark, and click it again to turn it off.
 
    ![The full page in the Screenshot tab](docs/images/panel.png)
 
@@ -78,6 +87,15 @@ Not affiliated with Google. Google and Google Search Console are trademarks of G
 It doesn't send data anywhere: everything runs in your browser. The only requests are for the
 page's own images, styles and fonts, straight to the site and without a referrer.
 
+The extension keeps one setting in your browser, whether it turns on by itself. See
+[PRIVACY.md](PRIVACY.md).
+
 ## Develop
 
-`npm install`, `npm test`, and `npm run build` to update `dist/`, which is what people install.
+`npm install`, `npm test`, and `npm run build` to update `dist/`: `install.html` and
+`bookmarklet.txt` for the bookmarklet, and `dist/extension/`, which Chrome loads with *Load
+unpacked*. `npm run pack` zips it for the Chrome Web Store, and `npm run icons` redraws its icons.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
