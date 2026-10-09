@@ -48,6 +48,20 @@ describe('installed', () => {
     expect(api.calls.created).toEqual([{ url: WELCOME_PAGE }]);
   });
 
+  it('still adds the menu and the automatic start when the welcome page can\'t open', async () => {
+    const api = fakeChrome({ failWelcome: true, openTabs: SC_TABS });
+    await installed({ reason: 'install' }, api);
+    expect(api.calls.menus).toHaveLength(1);
+    expect(api.registered).toEqual([AUTO_SCRIPT]);
+    expect(api.calls.executed).toEqual([autoInjection(1), autoInjection(2)]);
+  });
+
+  it('registers once, without an error, when an update lands at browser start and Chrome fires both events together', async () => {
+    const api = fakeChrome({ slow: true });
+    await expect(Promise.all([installed({ reason: 'update' }, api), startup(api)])).resolves.toBeDefined();
+    expect(api.registered).toEqual([AUTO_SCRIPT]);
+  });
+
   it('starts in the other open tabs when one of them refuses', async () => {
     const api = fakeChrome({ openTabs: SC_TABS, refuse: [1] });
     await installed({ reason: 'install' }, api);
@@ -92,6 +106,16 @@ describe('menuClicked', () => {
     expect(api.calls.executed).toEqual([autoInjection(1), autoInjection(2)]);
   });
 
+  it('ends in the state of the last click when two come in quick succession', async () => {
+    const api = fakeChrome({ stored: { autoStart: false }, slow: true });
+    await Promise.all([
+      menuClicked({ menuItemId: MENU_ID, checked: true }, api),
+      menuClicked({ menuItemId: MENU_ID, checked: false }, api),
+    ]);
+    expect(api.stored).toEqual({ autoStart: false });
+    expect(api.registered).toEqual([]);
+  });
+
   it('ignores other menu items', async () => {
     const api = fakeChrome();
     await menuClicked({ menuItemId: 'other', checked: false }, api);
@@ -123,7 +147,7 @@ describe('AUTO_SCRIPT', () => {
     expect(AUTO_SCRIPT).toEqual({
       id: 'auto',
       js: ['auto.js'],
-      matches: ['https://search.google.com/search-console*', 'https://search.google.com/u/*'],
+      matches: ['https://search.google.com/search-console*', 'https://search.google.com/u/*/search-console*'],
       runAt: 'document_idle',
       world: 'MAIN',
       persistAcrossSessions: true,
@@ -135,5 +159,6 @@ describe('AUTO_SCRIPT', () => {
     expect(covered('https://search.google.com/search-console?resource_id=x')).toBe(true);
     expect(covered('https://search.google.com/u/1/search-console/inspect?resource_id=x')).toBe(true);
     expect(covered('https://search.google.com/test/rich-results')).toBe(false);
+    expect(covered('https://search.google.com/u/1/test/rich-results')).toBe(false);
   });
 });
