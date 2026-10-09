@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "icons": "node scripts/make-icons.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
