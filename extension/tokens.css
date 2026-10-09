@@ -1,0 +1,25 @@
+/* Colour tokens: the natzir.com tools family (Passage Lens), dark by default, light when the
+   system asks for it. */
+:root {
+  color-scheme: dark;
+  --bg: #172224;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.11);
+  --line: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.66);
+  --focus: #7dd3fc;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f6f8f8;
+    --surface: #ffffff;
+    --surface-2: #e7eeee;
+    --line: #d5dfe0;
+    --text: #172224;
+    --muted: #4d5c5e;
+    --focus: #0b6bcb;
+  }
+}

@@ -1,0 +1,71 @@
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  margin: 0; padding: 72px 16px 104px; color: var(--text); overflow-x: hidden;
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased; text-wrap: pretty;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sprite { position: absolute; width: 0; height: 0; }
+
+.stage { position: relative; max-width: 620px; margin: 0 auto; }
+
+/* The card is opaque (the surface over the page colour), so no star shows through it. */
+.card {
+  position: relative; z-index: 1; border-radius: 16px;
+  background: linear-gradient(var(--surface), var(--surface)), var(--bg);
+  box-shadow: 0 0 0 1px var(--line), 0 16px 40px rgba(0, 0, 0, 0.1);
+  animation: enter 0.4s cubic-bezier(0.2, 0, 0, 1) both;
+}
+header { padding: 44px 32px 36px; border-bottom: 1px solid var(--line); text-align: center; }
+h1 { margin: 0; font-size: 30px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
+.content { padding: 12px 44px 44px; }
+.lead { margin: 24px 0 0; color: var(--muted); }
+h2 { margin: 32px 0 10px; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0 0 10px; }
+
+.icon { width: 1.2em; height: 1.2em; vertical-align: -0.25em; color: var(--muted); }
+.icon.app { border-radius: 4px; }
+.pins { display: inline-flex; align-items: center; gap: 4px; vertical-align: -0.25em; }
+.pins .icon { vertical-align: 0; }
+.arrow { width: 0.9em; height: 0.9em; color: var(--muted); }
+.pinned { color: var(--focus); }
+
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.steps li { position: relative; margin: 0 0 10px; padding-left: 38px; counter-increment: step; }
+.steps li::before {
+  content: counter(step); position: absolute; left: 0; top: 0.1em;
+  width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2);
+  font-size: 13px; font-weight: 600; line-height: 26px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.note { margin: 16px 0 0; padding: 14px 16px; border-radius: 10px; background: var(--surface-2); color: var(--muted); font-size: 15px; }
+
+.links { margin: 0; padding-left: 1.2em; }
+.links li { margin: 0 0 6px; }
+.links a { color: var(--focus); text-underline-offset: 3px; }
+
+/* Decorative stars around the card: they pop in once, then twinkle. */
+.sky { position: absolute; inset: 0; pointer-events: none; }
+.star {
+  position: absolute; width: var(--s); height: var(--s); opacity: var(--o, 1); rotate: var(--r, 0deg);
+  animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d) both, twinkle 4.5s ease-in-out calc(var(--d) * 6 + 0.6s) infinite;
+}
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.2); } }
+@keyframes twinkle {
+  50% { transform: scale(0.8) rotate(14deg); opacity: calc(var(--o, 1) * 0.7); }
+}
+/* No room beside the card: only the stars above and below it stay. */
+@media (max-width: 920px) {
+  .star.side { display: none; }
+}
+@media (max-width: 600px) {
+  body { padding-top: 56px; font-size: 16px; }
+  header { padding: 32px 20px 26px; }
+  h1 { font-size: 24px; }
+  .content { padding: 4px 20px 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .star { animation: none; }
+}
