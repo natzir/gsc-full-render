@@ -1,4 +1,5 @@
-// npm run build → dist/bookmarklet.txt (paste into a bookmark), dist/install.html (drag it) and
+// npm run build → dist/bookmarklet.txt (paste into a bookmark), dist/install.html (drag it), its copy in
+// docs/index.html (GitHub Pages serves docs/, so the button can be dragged straight from the web) and
 // dist/extension/ (the Chrome extension, ready for Load unpacked; npm run pack zips it).
 import { build } from 'esbuild';
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
@@ -44,6 +45,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await mkdir(`${root}dist`, { recursive: true });
   await writeFile(`${root}dist/bookmarklet.txt`, `${bookmarklet}\n`);
   await writeFile(`${root}dist/install.html`, installPage(bookmarklet));
+  await writeFile(`${root}docs/index.html`, installPage(bookmarklet));
+  await writeFile(`${root}docs/.nojekyll`, '');
   console.log(`bookmarklet: ${(bookmarklet.length / 1024).toFixed(1)} KB → dist/install.html`);
   await buildExtension();
   console.log('extension → dist/extension/');

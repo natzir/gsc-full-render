@@ -21,13 +21,10 @@ its links.
 
 **Chrome extension.** In review for the Chrome Web Store. It turns on by itself in URL Inspection.
 
-**Bookmarklet**, if you'd rather not install an extension:
-
-1. Open [`dist/install.html`](dist/install.html) and download it with the *Download raw file*
-   button (⬇).
-2. Open the downloaded file in your browser.
-3. Drag the **GSC Full Render** button to your bookmarks bar. If you can't see the bar, show it
-   with Ctrl+Shift+B (⌘+Shift+B on a Mac).
+**Bookmarklet**, if you'd rather not install an extension: open
+[natzir.github.io/gsc-full-render](https://natzir.github.io/gsc-full-render/) and drag the **GSC Full
+Render** button to your bookmarks bar. If you can't see the bar, show it with Ctrl+Shift+B (⌘+Shift+B
+on a Mac).
 
 ## Use
 
@@ -93,8 +90,8 @@ The extension keeps one setting in your browser, whether it turns on by itself. 
 ## Develop
 
 `npm install`, `npm test`, and `npm run build` to update `dist/`: `install.html` and
-`bookmarklet.txt` for the bookmarklet, and `dist/extension/`, which Chrome loads with *Load
-unpacked*. `npm run pack` zips it for the Chrome Web Store, and `npm run icons` redraws its icons.
+`bookmarklet.txt` for the bookmarklet (with a copy of the install page in `docs/index.html`, which
+GitHub Pages serves), and `dist/extension/`, which Chrome loads with *Load unpacked*. `npm run pack` zips it for the Chrome Web Store, and `npm run icons` redraws its icons.
 
 ## License
 
