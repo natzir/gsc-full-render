@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { readRequested } from '../src/requested.js';
-import { buildScPage, moreInfo } from './helpers/sc-page.js';
+import { buildScPage, moreInfo, fillMoreInfo } from './helpers/sc-page.js';
 
 const failed = [
   { reason: 'Other error', type: 'Image', url: 'https://natzir.com/slow.png' },
@@ -92,13 +92,28 @@ describe('readRequested', () => {
     expect(infoPanel.querySelector('.resources [aria-haspopup]').getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('gives up without Search Console\'s total (More info not filled yet) or without the filter', async () => {
+  it('reads every resource when nothing failed: no count then, so it waits for the list to stop growing', async () => {
+    const { infoPanel, filterLog } = buildScPage({ info: moreInfo([], 0, null), loaded });
+    expect(await readRequested(infoPanel)).toEqual(loaded.map(({ url }) => url));
+    await settles(filterLog, switchedTwice);
+    expect(rowUrls(infoPanel)).toEqual([]);
+  });
+
+  it('waits for More info, which Search Console can fill after the HTML', async () => {
+    const { infoPanel } = buildScPage({ info: '<div></div>' });
+    let filterLog = null;
+    setTimeout(() => (filterLog = fillMoreInfo(infoPanel, moreInfo([], 0, null), { loaded })), 200);
+    expect(await readRequested(infoPanel)).toEqual(loaded.map(({ url }) => url));
+    await settles(filterLog, switchedTwice);
+  });
+
+  it('gives up when More info stays empty, or has no Page resources filter', async () => {
     const empty = buildScPage({ info: '<div></div>' });
-    expect(await readRequested(empty.infoPanel)).toBeNull();
+    expect(await readRequested(empty.infoPanel, { wait: 100 })).toBeNull();
     const noFilter = buildScPage({ info: moreInfo(failed, 2, 4), loaded });
     noFilter.infoPanel.querySelector('.resources [aria-haspopup]').remove();
-    expect(await readRequested(noFilter.infoPanel)).toBeNull();
-    // The console's filter is not the resources' one: it is further from the count.
+    expect(await readRequested(noFilter.infoPanel, { wait: 100 })).toBeNull();
+    // The console's filter is not the resources' one.
     expect(noFilter.infoPanel.querySelector('.console [aria-haspopup]').getAttribute('aria-expanded')).toBe('false');
   });
 

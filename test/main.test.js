@@ -217,6 +217,21 @@ describe('toggle', () => {
     expect(infoPanel.querySelectorAll('.rows .row')).toHaveLength(1);
   });
 
+  it('does the same when nothing failed, and Search Console gives no count', async () => {
+    const page = 'https://natzir.com';
+    const { shotPanel } = buildScPage({
+      html: `<!DOCTYPE html><img src="${page}/logo.png"><img src="${page}/near.jpg" loading="lazy"><img src="${page}/far.jpg" loading="lazy">`,
+      info: moreInfo([], 0, null),
+      loaded: [{ type: 'Image', url: `${page}/logo.png` }, { type: 'Image', url: `${page}/near.jpg` }],
+    });
+    toggle(fakeWin());
+    await wait(1500);
+    const root = shotPanel.querySelector(':scope > [data-gfr-host]').shadowRoot;
+    const srcs = [...new DOMParser().parseFromString(root.querySelector('iframe').srcdoc, 'text/html').querySelectorAll('img')].map(img => img.getAttribute('src'));
+    expect(srcs).toEqual([`${page}/logo.png`, `${page}/near.jpg`, 'data:,']);
+    expect(root.querySelector('.unloaded').textContent).toBe('⚠ 1 not loaded');
+  });
+
   it('does not touch Page resources\' filter when the page has no loading="lazy" image', async () => {
     const { filterLog } = buildScPage({
       html: '<!DOCTYPE html><img src="https://natzir.com/logo.png">',

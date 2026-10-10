@@ -5,19 +5,22 @@
 // resource: [icon, reason, type] then the URL. JavaScript console rows have three parts. Icons
 // are icon-font glyphs: a private-use character that shows no text. Each list has a filter: a menu
 // button holding its menu; Page resources' has two options (didn't load, loaded), the console's
-// one per message level. total: how many couldn't be loaded, of: how many resources in all.
+// one per message level.
 const RESOURCE_FILTER =
   '<div role="button" aria-label="Filter resources" aria-haspopup="true" aria-expanded="false"><div role="menu"><div role="menuitem">Resources that didn\'t load</div><div role="menuitem">Resources that loaded</div></div></div>';
 
+// total: how many couldn't be loaded; of: how many resources in all, or null for a page where nothing
+// failed (Search Console then says so, with no count).
 export function moreInfo(unloaded = [], total = unloaded.length, of = 167) {
+  const count = of === null ? 'All resources were loaded' : `${total}/${of} couldn't be loaded`;
   const rows = unloaded
     .map(({ reason, type, url }) => `<div class="row"><div class="cells"><span class="icon">&#xe88e;</span><div>${reason}</div><div>${type}</div></div><div>${url}</div></div>`)
     .join('');
   return `
     <div class="views">
-      <div class="summary"><div>Page resources</div><div>${total}/${of} couldn't be loaded</div></div>
+      <div class="summary"><div>Page resources</div><div>${count}</div></div>
       <div class="resources">
-        <div class="head"><span>arrow_back</span><div>Page resources</div><div>${total}/${of} couldn't be loaded</div></div>
+        <div class="head"><span>arrow_back</span><div>Page resources</div><div>${count}</div></div>
         ${RESOURCE_FILTER}
         <div class="list"><div class="rows">${rows}</div></div>
       </div>
@@ -83,6 +86,13 @@ export function buildScPage({
     editor: cm,
     filterLog: wireResourceFilter({ loaded, respond, ignoreFor }),
   };
+}
+
+// Fills More info later, as Search Console can after the HTML, with its filter working (see
+// wireResourceFilter). Returns what the filter did.
+export function fillMoreInfo(infoPanel, info, { loaded = [], respond = true, ignoreFor = 0 } = {}) {
+  infoPanel.innerHTML = info;
+  return wireResourceFilter({ loaded, respond, ignoreFor });
 }
 
 // Page resources' filter, as Search Console's behaves: a click on the button opens its menu,

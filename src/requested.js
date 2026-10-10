@@ -11,14 +11,17 @@ const STEP_MS = 20;
 const PRESS_MS = 150;
 // Its menu closes with an animation: kept hidden until it has.
 const CLOSING_MS = 300;
+// Without Search Console's total (nothing failed), the list counts as complete once it stops
+// growing for this long.
+const SETTLED_MS = 400;
 const HIDING = 'data-gfr-hiding-menu';
 
 let queue = Promise.resolve();
 
 // infoPanel: the More info tab panel. Resolves to every URL Page resources lists, loaded or not,
 // as soon as it is read (the filter is switched back after), or to null when that full list can't
-// be read: no count yet, no filter, or rows that don't add up to Search Console's own total. One
-// read at a time: two views must not switch the filter at once.
+// be read: More info stays empty, no filter, or rows that don't add up to Search Console's own
+// total. One read at a time: two views must not switch the filter at once.
 export function readRequested(infoPanel, { wait = WAIT_MS } = {}) {
   let found;
   const list = new Promise(resolve => (found = resolve));
@@ -29,18 +32,20 @@ export function readRequested(infoPanel, { wait = WAIT_MS } = {}) {
 }
 
 async function readList(infoPanel, wait, found) {
+  // Search Console can fill More info after the HTML.
+  if (!(await until(() => resourceFilter(infoPanel), wait))) return;
+  // "N/M couldn't be loaded"; when nothing failed it says so, with no count.
   const total = resourceTotal(infoPanel);
-  if (total === null) return;
   const urls = () => readResourceRows(infoPanel).map(row => row.url);
   const before = urls().length;
   if (before === total) return found(urls());
-  if (!resourceFilter(infoPanel)) return;
   const root = infoPanel.ownerDocument.documentElement;
   const style = hideMenus(root);
   const opened = [];
   try {
     if (!(await switchLoaded(infoPanel, wait, opened))) return;
-    found((await until(() => urls().length === total, wait)) ? urls() : null);
+    const complete = total === null ? settled(() => urls().length, before) : () => urls().length === total;
+    found((await until(complete, wait)) ? urls() : null);
     // Switched back only if it changed: a menu that didn't respond is as it was.
     if (urls().length !== before) {
       await switchLoaded(infoPanel, wait, opened);
@@ -55,13 +60,18 @@ async function readList(infoPanel, wait, found) {
 }
 
 // Page resources' filter: the menu button nearest its "N/M couldn't be loaded" count (the
-// JavaScript console's is further away). Not its menu: Search Console moves that out of the button
-// once opened, and out of the page once closed.
+// JavaScript console's is further away). Not its menu, while there is a count: Search Console
+// moves that out of the button once opened, and out of the page once closed. Without a count
+// (nothing failed), the button holding a menu with two options (the console's has one per level).
 function resourceFilter(infoPanel) {
-  const distances = [...infoPanel.querySelectorAll('[aria-haspopup]')].map(button => [button, countDistance(button, infoPanel)]);
+  const buttons = [...infoPanel.querySelectorAll('[aria-haspopup]')];
+  const distances = buttons.map(button => [button, countDistance(button, infoPanel)]);
   const nearest = Math.min(...distances.map(([, distance]) => distance));
-  const filters = distances.filter(([, distance]) => distance === nearest && distance < Infinity);
-  return filters.length === 1 ? filters[0][0] : null;
+  const filters =
+    nearest < Infinity
+      ? distances.filter(([, distance]) => distance === nearest).map(([button]) => button)
+      : buttons.filter(button => button.querySelectorAll('[role="menu"] [role="menuitem"]').length === 2);
+  return filters.length === 1 ? filters[0] : null;
 }
 
 function countDistance(el, infoPanel) {
@@ -133,6 +143,17 @@ function hideMenus(root) {
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// A check for until(): true once count() has grown past before and stayed the same for SETTLED_MS.
+function settled(count, before) {
+  let last = -1;
+  let since = 0;
+  return () => {
+    const now = count();
+    if (now !== last) [last, since] = [now, Date.now()];
+    return now > before && Date.now() - since >= SETTLED_MS;
+  };
+}
 
 async function until(done, wait) {
   for (let waited = 0; !done(); waited += STEP_MS) {
