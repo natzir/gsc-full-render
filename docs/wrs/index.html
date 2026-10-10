@@ -20,7 +20,7 @@
 <body>
 <header>
   <h1>WRS viewport test</h1>
-  <p>What the renderer's viewport reaches. Run in URL Inspection and read the rendered HTML: the script writes what it saw below, each block says whether it entered the viewport, and Page resources lists which <code>loading="lazy"</code> images were requested (<code>?y=</code> down the page, <code>?x=</code> across the strip).</p>
+  <p>What the renderer's viewport reaches. Run in URL Inspection and read the rendered HTML: the script writes what it saw below, each block says whether it entered the viewport, and Page resources lists which <code>loading="lazy"</code> images were requested (<code>?y=</code> down the page, <code>?x=</code> across the strip). <code>?h=</code> sets how tall the page is.</p>
   <pre id="viewport">viewport: script did not run</pre>
   <pre id="seen">entered the viewport: none</pre>
   <pre id="log"></pre>
@@ -33,8 +33,10 @@
   for (let x = 0; x < 6000; x += 500) {
     strip.insertAdjacentHTML('beforeend', `<div>x=${x} px <img loading="lazy" src="dot.png?x=${x}" alt=""></div>`);
   }
+  // ?h=200000 makes the page that tall (40,000 px by default), one block every 1,000 px.
+  const height = Math.min(Number(new URLSearchParams(location.search).get('h')) || 40000, 500000);
   const marks = document.getElementById('marks');
-  for (let y = 1000; y <= 40000; y += 1000) {
+  for (let y = 1000; y <= height; y += 1000) {
     marks.insertAdjacentHTML('beforeend', `<div class="mark" id="y${y}">y≈${y} px <img loading="lazy" src="dot.png?y=${y}" alt=""> <span class="state">not seen</span></div>`);
   }
 
