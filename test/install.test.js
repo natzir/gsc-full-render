@@ -18,6 +18,12 @@ describe('installPage', () => {
     expect(doc.querySelector('a.bm').getAttribute('href')).toBe(url);
   });
 
+  it('links the extension on the Chrome Web Store, for those who would rather install it', () => {
+    const doc = new DOMParser().parseFromString(installPage('javascript:void 0'), 'text/html');
+    const store = doc.querySelector('a[href="https://chromewebstore.google.com/detail/gsc-full-fetch-render-as/ljlijkonoghompcadbfihdjnkbcmbpan"]');
+    expect(store?.textContent).toBe('GSC Full Fetch & Render as Googlebot by Natzir');
+  });
+
   it('uses the full name for the page and the short one for the bookmark', () => {
     const doc = new DOMParser().parseFromString(installPage('javascript:void 0'), 'text/html');
     expect(doc.title).toBe('Google Search Console Full Fetch & Render');

@@ -30,6 +30,7 @@ export function installPage(bookmarkletUrl) {
   <li>Click the bookmark once. The <em>Screenshot</em> tab now shows the full page.</li>
   <li>Click it again to turn it off.</li>
 </ol>
+<p>Prefer an extension that turns on by itself? Install <a href="https://chromewebstore.google.com/detail/gsc-full-fetch-render-as/ljlijkonoghompcadbfihdjnkbcmbpan">GSC Full Fetch &amp; Render as Googlebot by Natzir</a> from the Chrome Web Store.</p>
 </body>
 </html>
 `;

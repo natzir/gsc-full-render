@@ -19,7 +19,7 @@ its links.
 
 ## Install
 
-**Chrome extension.** In review for the Chrome Web Store. It turns on by itself in URL Inspection.
+**Chrome extension:** [GSC Full Fetch & Render as Googlebot by Natzir](https://chromewebstore.google.com/detail/gsc-full-fetch-render-as/ljlijkonoghompcadbfihdjnkbcmbpan) on the Chrome Web Store. It turns on by itself in URL Inspection.
 
 **Bookmarklet**, if you'd rather not install an extension: open
 [natzir.github.io/gsc-full-render](https://natzir.github.io/gsc-full-render/) and drag the **GSC Full
