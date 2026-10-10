@@ -58,10 +58,11 @@ leaves out what Google certainly didn't load, with an amber outline where it was
 - resources blocked by robots.txt
 - resources that return an HTTP error (404, 5xx)
 - lazy images whose script never ran (the HTML still has the placeholder)
-- images with `loading="lazy"` that Google never requested: Googlebot renders in a tall viewport
-  but doesn't scroll, so one outside it (far down the page, or off-screen in a carousel) isn't
-  loaded. To tell which, it turns on *Resources that loaded* in More info › Page resources for a
-  moment, reads the full list and turns it off again.
+- images with `loading="lazy"` that Google never requested: Googlebot doesn't scroll, so one
+  outside its viewport, such as off-screen in a carousel, isn't loaded (in the live test its
+  viewport grows to the page's full height, not its width). To tell which, it turns on *Resources
+  that loaded* in More info › Page resources for a moment, reads the full list and turns it off
+  again.
 
 "Other error" is loaded anyway: Search Console doesn't say what happened, and it's often the
 test's own time limit. `⚠ N not loaded` lists everything with its reason.

@@ -143,9 +143,9 @@ export function leaveLazyUnrequested(lazy, baseUrl) {
   return urls;
 }
 
-// Images with loading="lazy" that Googlebot never requested: it renders in a tall but finite
-// viewport and doesn't scroll, so one far down the page, or off-screen in a carousel, stays
-// unloaded. requested: every URL Search Console lists in Page resources, loaded or not (see
+// Images with loading="lazy" that Googlebot never requested: it doesn't scroll, so one outside its
+// viewport, such as off-screen in a carousel, stays unloaded (in the live test the viewport grows to
+// the page's full height, not its width). requested: every URL Search Console lists in Page resources, loaded or not (see
 // requested.js), or null when the full list couldn't be read. Runs on the HTML as written, like
 // leaveUnloaded. Returns the URLs of the images it left out.
 export function leaveLazyNotRequested(doc, requested, baseUrl, googlebotUrl = baseUrl) {
