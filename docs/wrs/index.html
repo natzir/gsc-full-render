@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>WRS viewport test</title>
+<style>
+  body { margin: 0; font: 15px/1.4 system-ui, sans-serif; color: #202124; }
+  header { padding: 12px; }
+  pre { margin: 4px 0; white-space: pre-wrap; word-break: break-all; }
+  /* a fixed height, so the blocks below don't move as the log grows */
+  #log { height: 160px; overflow: auto; }
+  .strip { display: flex; overflow-x: auto; }
+  .strip > div { flex: 0 0 500px; height: 80px; box-sizing: border-box; border-left: 1px solid #999; padding: 4px; }
+  .mark { height: 1000px; box-sizing: border-box; border-top: 1px solid #999; padding: 4px 12px; }
+  img { width: 40px; height: 40px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<header>
+  <h1>WRS viewport test</h1>
+  <p>What the renderer's viewport reaches. Run in URL Inspection and read the rendered HTML: the script writes what it saw below, each block says whether it entered the viewport, and Page resources lists which <code>loading="lazy"</code> images were requested (<code>?y=</code> down the page, <code>?x=</code> across the strip).</p>
+  <pre id="viewport">viewport: script did not run</pre>
+  <pre id="seen">entered the viewport: none</pre>
+  <pre id="log"></pre>
+</header>
+<div class="strip" id="strip"></div>
+<main id="marks"></main>
+<script>
+  // Built by script so the page source stays short; the lazy images are in the DOM before any load.
+  const strip = document.getElementById('strip');
+  for (let x = 0; x < 6000; x += 500) {
+    strip.insertAdjacentHTML('beforeend', `<div>x=${x} px <img loading="lazy" src="dot.png?x=${x}" alt=""></div>`);
+  }
+  const marks = document.getElementById('marks');
+  for (let y = 1000; y <= 40000; y += 1000) {
+    marks.insertAdjacentHTML('beforeend', `<div class="mark" id="y${y}">y≈${y} px <img loading="lazy" src="dot.png?y=${y}" alt=""> <span class="state">not seen</span></div>`);
+  }
+
+  const size = () => ({
+    innerWidth, innerHeight,
+    clientHeight: document.documentElement.clientHeight,
+    scrollHeight: document.documentElement.scrollHeight,
+    screen: `${screen.width}x${screen.height}`,
+    devicePixelRatio,
+  });
+  document.getElementById('viewport').textContent = `viewport at start: ${JSON.stringify(size())}`;
+
+  const log = document.getElementById('log');
+  const note = text => log.insertAdjacentText('beforeend', `${Math.round(performance.now())} ms: ${text}\n`);
+  addEventListener('resize', () => note(`resize ${JSON.stringify(size())}`));
+  addEventListener('scroll', () => note(`scroll to ${scrollY}`), { passive: true });
+  for (const ms of [1000, 3000, 6000]) setTimeout(() => note(`after ${ms} ms ${JSON.stringify(size())}`), ms);
+
+  const seen = new Set();
+  const seenOut = document.getElementById('seen');
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting || seen.has(entry.target.id)) continue;
+      seen.add(entry.target.id);
+      entry.target.querySelector('.state').textContent = `seen at ${Math.round(performance.now())} ms`;
+    }
+    const ys = [...seen].map(id => Number(id.slice(1))).sort((a, b) => a - b);
+    seenOut.textContent = `entered the viewport: ${ys.length} blocks, last at y≈${ys.at(-1) ?? 0} px`;
+  });
+  document.querySelectorAll('.mark').forEach(mark => observer.observe(mark));
+</script>
+</body>
+</html>
