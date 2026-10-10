@@ -12,7 +12,7 @@
   #log { height: 160px; overflow: auto; }
   .strip { display: flex; overflow-x: auto; }
   .strip > div { flex: 0 0 500px; height: 80px; box-sizing: border-box; border-left: 1px solid #999; padding: 4px; }
-  .mark { height: 1000px; box-sizing: border-box; border-top: 1px solid #999; padding: 4px 12px; }
+  .mark { box-sizing: border-box; border-top: 1px solid #999; padding: 4px 12px; }
   img { width: 40px; height: 40px; vertical-align: middle; }
 </style>
 </head>
@@ -32,11 +32,13 @@
   for (let x = 0; x < 6000; x += 500) {
     strip.insertAdjacentHTML('beforeend', `<div>x=${x} px <img loading="lazy" src="dot.png?x=${x}" alt=""></div>`);
   }
-  // ?h=200000 makes the page that tall (40,000 px by default), one block every 1,000 px.
-  const height = Math.min(Number(new URLSearchParams(location.search).get('h')) || 40000, 500000);
+  // ?h=200000 makes the page that tall (40,000 px by default), in at most 200 blocks of 1,000 px or
+  // more, so Page resources stays readable.
+  const height = Math.min(Number(new URLSearchParams(location.search).get('h')) || 40000, 20000000);
+  const step = Math.max(1000, Math.ceil(height / 200 / 1000) * 1000);
   const marks = document.getElementById('marks');
-  for (let y = 1000; y <= height; y += 1000) {
-    marks.insertAdjacentHTML('beforeend', `<div class="mark" id="y${y}">y≈${y} px <img loading="lazy" src="dot.png?y=${y}" alt=""> <span class="state">not seen</span></div>`);
+  for (let y = step; y <= height; y += step) {
+    marks.insertAdjacentHTML('beforeend', `<div class="mark" id="y${y}" style="height:${step}px">y≈${y} px <img loading="lazy" src="dot.png?y=${y}" alt=""> <span class="state">not seen</span></div>`);
   }
 
   const size = () => ({
