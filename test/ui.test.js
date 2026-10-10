@@ -221,6 +221,18 @@ describe('mountPanelUi', () => {
     ]);
   });
 
+  it('adds the loading="lazy" images Googlebot never requested, in their own group', () => {
+    const { shotPanel } = buildScPage();
+    const ui = mountPanelUi(shotPanel, { live: true });
+    const root = shadow(shotPanel);
+    ui.showPrepared({ leftOut: true, unloaded: { count: 0, resources: [] }, lazy: ['https://a.example/1.jpg'], notRequested: ['https://a.example/far.jpg'] });
+    expect(root.querySelector('.unloaded').textContent).toBe('⚠ 2 not loaded');
+    const details = root.querySelector('.details');
+    expect([...details.querySelectorAll('p')].map(p => p.textContent)).toEqual([TEXT.lazyIntro(1), TEXT.notRequestedIntro(1)]);
+    const items = [...details.querySelectorAll('li')].map(li => [...li.children].map(el => el.textContent));
+    expect(items[1]).toEqual(['Image', TEXT.reasons.notRequested, TEXT.effects.shown, 'https://a.example/far.jpg']);
+  });
+
   it('lists lazy images alone when Search Console reports nothing', () => {
     const { shotPanel } = buildScPage();
     const ui = mountPanelUi(shotPanel, { live: true });

@@ -23,7 +23,7 @@ GSC Full Fetch & Render shows the whole page Google rendered in Search Console's
 
 It turns on by itself when you open View tested page or View crawled page. Click its icon to turn it off in that tab, or right-click the icon to switch the automatic start off and use the icon as an on/off button.
 
-• The whole page, from Google's rendered HTML. Its styles, images and fonts are loaded now by your browser, not by Google, so the test's timeouts don't apply, and the page can differ from what Google saw if the site serves Googlebot something else or has changed since the crawl. What Google certainly couldn't load (blocked by robots.txt, HTTP errors, lazy images whose script never ran) is left out and outlined in amber, with the list and the reason.
+• The whole page, from Google's rendered HTML. Its styles, images and fonts are loaded now by your browser, not by Google, so the test's timeouts don't apply, and the page can differ from what Google saw if the site serves Googlebot something else or has changed since the crawl. What Google certainly didn't load (blocked by robots.txt, HTTP errors, lazy images whose script never ran, loading="lazy" images outside its viewport that it never requested) is left out and outlined in amber, with the list and the reason.
 • Open it larger, at real size.
 • Every link on the page, with filters: internal or external; follow, nofollow, ugc or sponsored; crawlable or not, and why (javascript:, empty href, onclick…); visible on load, in a carousel, collapsed, invisible or hidden; and URL issues such as parameters, fragments, http, uppercase, spaces, relative without a slash, or a domain without https://. Click a row to jump to the link on the page, and download the list as CSV.
 

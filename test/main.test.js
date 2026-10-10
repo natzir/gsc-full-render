@@ -200,6 +200,34 @@ describe('toggle', () => {
     expect(srcs(modal.querySelector('iframe'))).toEqual(['data:,', 'https://natzir.com/slow.png']);
   });
 
+  it('leaves out the loading="lazy" images Googlebot never requested, and puts Page resources\' filter back', async () => {
+    const page = 'https://natzir.com';
+    const { shotPanel, infoPanel, filterLog } = buildScPage({
+      html: `<!DOCTYPE html><img src="${page}/logo.png"><img src="${page}/near.jpg" loading="lazy"><img src="${page}/far.jpg" loading="lazy">`,
+      info: moreInfo([{ reason: 'Other error', type: 'Script', url: 'https://plausible.io/js/.js' }], 1, 3),
+      loaded: [{ type: 'Image', url: `${page}/logo.png` }, { type: 'Image', url: `${page}/near.jpg` }],
+    });
+    toggle(fakeWin());
+    await wait(1000);
+    const root = shotPanel.querySelector(':scope > [data-gfr-host]').shadowRoot;
+    const srcs = [...new DOMParser().parseFromString(root.querySelector('iframe').srcdoc, 'text/html').querySelectorAll('img')].map(img => img.getAttribute('src'));
+    expect(srcs).toEqual([`${page}/logo.png`, `${page}/near.jpg`, 'data:,']);
+    expect(root.querySelector('.unloaded').textContent).toBe('⚠ 2 not loaded');
+    expect(filterLog).toEqual(['open', 'loaded on', 'open', 'loaded off']);
+    expect(infoPanel.querySelectorAll('.rows .row')).toHaveLength(1);
+  });
+
+  it('does not touch Page resources\' filter when the page has no loading="lazy" image', async () => {
+    const { filterLog } = buildScPage({
+      html: '<!DOCTYPE html><img src="https://natzir.com/logo.png">',
+      info: moreInfo([{ reason: 'Other error', type: 'Script', url: 'https://plausible.io/js/.js' }], 1, 2),
+      loaded: [{ type: 'Image', url: 'https://natzir.com/logo.png' }],
+    });
+    toggle(fakeWin());
+    await wait(200);
+    expect(filterLog).toEqual([]);
+  });
+
   it('leaves nothing out when Search Console only missed things that change nothing', async () => {
     const { shotPanel } = buildScPage({
       info: moreInfo([{ reason: 'Other error', type: 'XHR', url: 'https://natzir.com/api' }]),

@@ -32,10 +32,13 @@ export const TEXT = {
     `Search Console couldn't load ${count} resources, but their list couldn't be read here: see More info › Page resources.`,
   lazyIntro: count =>
     `${count} lazy-loaded image${count === 1 ? '' : 's'} never loaded: the lazy-load script didn't run, so the page kept a placeholder. Search Console doesn't list them.`,
+  notRequestedIntro: count =>
+    `${count} image${count === 1 ? '' : 's'} with loading="lazy" Google never requested: Googlebot doesn't scroll, so what lies outside its viewport (far down the page, or off-screen in a carousel) isn't loaded. Search Console doesn't list ${count === 1 ? 'it' : 'them'}.`,
   reasons: {
     robots: 'Blocked by robots.txt: Google may not fetch it',
     other: "Other error: Search Console doesn't say why (often a time limit of the test)",
     lazy: "Never loaded: its lazy-load script didn't run",
+    notRequested: 'Never requested: loading="lazy", outside its viewport',
   },
   effects: {
     shown: 'Left out of the full page',

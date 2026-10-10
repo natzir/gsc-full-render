@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { leaveUnloaded, leaveLazyUnrequested, UNLOADED_URL } from '../src/unloaded.js';
+import { leaveUnloaded, leaveLazyUnrequested, leaveLazyNotRequested, UNLOADED_URL } from '../src/unloaded.js';
 import { sanitize } from '../src/sanitize.js';
 
 const BASE = 'https://www.shop.example/city/madrid.html';
@@ -144,5 +144,72 @@ describe('leaveLazyUnrequested', () => {
     const { lazy } = sanitize(doc, BASE);
     expect(leaveLazyUnrequested(lazy, BASE)).toEqual([]);
     expect(doc.querySelector('style[data-gfr-unloaded-style]')).toBeNull();
+  });
+});
+
+describe('leaveLazyNotRequested', () => {
+  // Every URL Search Console lists in Page resources, loaded or not: what Googlebot requested.
+  const listed = paths => paths.map(path => `https://www.shop.example${path}`);
+
+  it('leaves out the images with loading="lazy" that Googlebot never requested, and lists them', () => {
+    const doc = parse(`
+      <img id="logo" src="/logo.png">
+      <img id="near" src="/near.jpg" loading="lazy">
+      <picture><source srcset="/far.webp"><img id="far" src="/far.jpg" srcset="/far-2x.jpg 2x" sizes="100vw" loading="LAZY"></picture>
+      <img id="eager" src="/eager.jpg">`);
+    expect(leaveLazyNotRequested(doc, listed(['/logo.png', '/near.jpg']), BASE)).toEqual(['https://www.shop.example/far.jpg']);
+    const far = doc.getElementById('far');
+    expect(far.getAttribute('src')).toBe(UNLOADED_URL);
+    expect(far.hasAttribute('srcset') || far.hasAttribute('sizes')).toBe(false);
+    expect(doc.querySelector('source')).toBeNull();
+    expect(far.hasAttribute('data-gfr-unloaded')).toBe(true);
+    expect(far.title).toBe('Google never requested it: loading="lazy", outside its viewport');
+    expect(doc.getElementById('near').getAttribute('src')).toBe('/near.jpg');
+    // Not lazy: the browser loaded it with the page, as Googlebot's does.
+    expect(doc.getElementById('eager').getAttribute('src')).toBe('/eager.jpg');
+    expect(doc.querySelectorAll('style[data-gfr-unloaded-style]')).toHaveLength(1);
+  });
+
+  it('keeps a lazy image when Googlebot requested any of its candidates: it picks one', () => {
+    const doc = parse(`
+      <img id="logo" src="/logo.png">
+      <img id="a" src="/a.jpg" srcset="/a-2x.jpg 2x" loading="lazy">
+      <picture><source srcset="/b.webp 1x, /b-2x.webp 2x"><img id="b" src="/b.jpg" loading="lazy"></picture>`);
+    expect(leaveLazyNotRequested(doc, listed(['/logo.png', '/a-2x.jpg', '/b.webp']), BASE)).toEqual([]);
+    expect(doc.querySelector('[data-gfr-unloaded]')).toBeNull();
+  });
+
+  it('matches URLs as Search Console shows them (decoded) and as Googlebot resolved them', () => {
+    const doc = parse('<img src="/logo.png"><img id="a" src="img/a%20b.jpg" loading="lazy">');
+    const googlebot = 'https://www.shop.example/es/madrid.html';
+    expect(leaveLazyNotRequested(doc, ['https://www.shop.example/logo.png', 'https://www.shop.example/es/img/a b.jpg'], BASE, googlebot)).toEqual([]);
+  });
+
+  it('leaves alone lazy images without an http(s) URL: a placeholder needs no request', () => {
+    const doc = parse('<img src="/logo.png"><img id="a" src="data:image/gif;base64,R0l" data-src="/a.jpg" loading="lazy">');
+    expect(leaveLazyNotRequested(doc, listed(['/logo.png']), BASE)).toEqual([]);
+    expect(doc.getElementById('a').getAttribute('src')).toBe('data:image/gif;base64,R0l');
+  });
+
+  it('trusts no list that none of the page\'s images is in: it could be one misread', () => {
+    const doc = parse('<img src="/logo.png"><img id="a" src="/a.jpg" loading="lazy">');
+    expect(leaveLazyNotRequested(doc, listed(['/css/main.css']), BASE)).toEqual([]);
+    expect(doc.getElementById('a').getAttribute('src')).toBe('/a.jpg');
+  });
+
+  it('does nothing without the full list', () => {
+    const doc = parse('<img src="/logo.png"><img src="/a.jpg" loading="lazy">');
+    expect(leaveLazyNotRequested(doc, null, BASE)).toEqual([]);
+    expect(doc.querySelector('[data-gfr-unloaded]')).toBeNull();
+  });
+
+  it('skips what Search Console couldn\'t load (already left out) and <noscript>', () => {
+    const doc = parse(`
+      <img src="/logo.png">
+      <img id="blocked" src="/blocked.jpg" loading="lazy">
+      <noscript><img src="/ns.jpg" loading="lazy"></noscript>`);
+    leaveUnloaded(doc, [robots('Image', 'https://www.shop.example/blocked.jpg')], BASE);
+    expect(leaveLazyNotRequested(doc, listed(['/logo.png', '/blocked.jpg']), BASE)).toEqual([]);
+    expect(doc.getElementById('blocked').title).toBe("Search Console couldn't load this: Googlebot blocked by robots.txt");
   });
 });

@@ -65,9 +65,16 @@ export function findInspectedUrl(doc) {
 // have three parts and are skipped. count: Search Console's own "3/167" count; resources is null
 // when the rows don't match it (its filter can list the resources that did load, or the rows
 // changed shape): never report "everything loaded" on a list we couldn't read.
-const COUNT_TEXT = /^(\d+)\s*\/\s*\d+\b/;
+const COUNT_TEXT = /^(\d+)\s*\/\s*(\d+)\b/;
 
 export function readUnloaded(infoPanel) {
+  const rows = readResourceRows(infoPanel);
+  const count = unloadedCount(infoPanel) ?? rows.length;
+  return { count, resources: count === rows.length ? rows : null };
+}
+
+// Every row Page resources shows, whatever its filter: [{ reason, type, url }].
+export function readResourceRows(infoPanel) {
   const rows = [];
   for (const el of infoPanel?.querySelectorAll('div') ?? []) {
     if (el.childElementCount !== 2) continue;
@@ -81,16 +88,26 @@ export function readUnloaded(infoPanel) {
     const [reason, type = '', ...rest] = start < 0 ? [] : texts.slice(start);
     if (reason && !rest.length) rows.push({ reason, type, url });
   }
-  const count = unloadedCount(infoPanel) ?? rows.length;
-  return { count, resources: count === rows.length ? rows : null };
+  return rows;
 }
 
 // Search Console's own "N/M couldn't be loaded" count (the summary and the list both show it),
 // or null when More info has none yet.
 export function unloadedCount(infoPanel) {
+  const match = countMatch(infoPanel);
+  return match ? Number(match[1]) : null;
+}
+
+// M in "N/M couldn't be loaded": how many resources Googlebot requested in all, or null.
+export function resourceTotal(infoPanel) {
+  const match = countMatch(infoPanel);
+  return match ? Number(match[2]) : null;
+}
+
+function countMatch(infoPanel) {
   for (const leaf of infoPanel?.querySelectorAll('*') ?? []) {
     const match = !leaf.childElementCount && COUNT_TEXT.exec(leaf.textContent.trim());
-    if (match) return Number(match[1]);
+    if (match) return match;
   }
   return null;
 }

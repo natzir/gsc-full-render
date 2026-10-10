@@ -120,4 +120,24 @@ describe('prepareHtml', () => {
     expect(parse(lazy.html).querySelector('img').getAttribute('src')).toBe('data:,');
     expect(prepareHtml('<body><p>x</p><noscript><img src="/b.jpg"></noscript></body>', 'https://a.example/p', undefined, missing('b.jpg')).unloaded[0].effect).toBe('not-found');
   });
+
+  it('leaves out the loading="lazy" images Googlebot never requested, when it has the full list of what it requested', () => {
+    const html = '<!DOCTYPE html><img src="/logo.png"><img src="/near.jpg" loading="lazy"><img src="/far.jpg" loading="lazy">';
+    const out = prepareHtml(html, 'https://a.example/p', undefined, [], ['https://a.example/logo.png', 'https://a.example/near.jpg']);
+    expect(out.notRequested).toEqual(['https://a.example/far.jpg']);
+    expect(out.leftOut).toBe(true);
+    const imgs = [...parse(out.html).querySelectorAll('img')];
+    expect(imgs.map(img => [img.getAttribute('src'), img.getAttribute('loading')])).toEqual([
+      ['https://a.example/logo.png', null],
+      ['https://a.example/near.jpg', 'eager'],
+      ['data:,', 'lazy'],
+    ]);
+  });
+
+  it('loads every loading="lazy" image without that list', () => {
+    const out = prepareHtml('<img src="/logo.png"><img src="/far.jpg" loading="lazy">', 'https://a.example/p');
+    expect(out.notRequested).toEqual([]);
+    expect(out.leftOut).toBe(false);
+    expect(parse(out.html).querySelectorAll('img')[1].getAttribute('loading')).toBe('eager');
+  });
 });

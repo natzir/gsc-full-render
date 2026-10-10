@@ -1,6 +1,7 @@
 // Mounts the full page into one inspection panel: source → prepare → render → UI. It leaves out
 // what Search Console couldn't load for a certain reason (see unloaded.js).
 import { readPanel } from './source.js';
+import { readRequested } from './requested.js';
 import { prepareHtml } from './prepare.js';
 import {
   createFrame,
@@ -23,6 +24,9 @@ import { TEXT } from './text.js';
 // Search Console can show the panel before its HTML: a new view is mounted when the HTML arrives
 // (watch.js), so its absence only counts as an error after this long.
 const HTML_WAIT_MS = 20_000;
+
+// An image (or iframe) the browser loads only near the viewport: loading="lazy".
+const NATIVE_LAZY = /\bloading\s*=\s*["']?\s*lazy\b/i;
 
 // Wait until "Loading full render…" has been painted: parsing a large page blocks the thread.
 const nextPaint = () =>
@@ -235,12 +239,17 @@ export function mountView(panel, policy) {
     await nextPaint();
     if (destroyed) return;
     const { count, resources } = source.unloaded;
-    prepared = prepareHtml(source.html, source.inspectedUrl, policy, resources ?? []);
+    // What Googlebot requested tells which loading="lazy" images it never loaded: read only when
+    // there are some, since it switches Search Console's filter.
+    const requested = NATIVE_LAZY.test(source.html) ? await readRequested(panel.infoPanel) : null;
+    if (destroyed) return;
+    prepared = prepareHtml(source.html, source.inspectedUrl, policy, resources ?? [], requested);
     source.html = null; // up to a few MB, and the prepared copy is all that's needed from now on
     ui.showPrepared({
       leftOut: prepared.leftOut,
       unloaded: { count, resources: resources && prepared.unloaded },
       lazy: prepared.lazy,
+      notRequested: prepared.notRequested,
     });
     panelEntry = mountPanelFrame();
     // The Screenshot tab is often hidden (0×0) when the panel opens; fit when it appears.

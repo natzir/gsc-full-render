@@ -2,7 +2,7 @@
 // reason is certain: blocked by robots.txt, or an HTTP error. Each such resource is left unloaded
 // wherever the page's HTML refers to it. "Other error" gives no reason and is often a limit of the
 // test: it is loaded.
-import { resolveUrl as resolve, srcsetUrls, mapCssUrls } from './urls.js';
+import { resolveUrl as resolve, httpUrl, srcsetUrls, mapCssUrls } from './urls.js';
 
 // Fails to load as an image, a stylesheet or a font, without any request: what Google got.
 export const UNLOADED_URL = 'data:,';
@@ -140,5 +140,41 @@ export function leaveLazyUnrequested(lazy, baseUrl) {
     mark(el, "Never loaded: its lazy-load script didn't run, so the page kept a placeholder");
   }
   if (urls.length) addMarkStyle(lazy[0].el.ownerDocument);
+  return urls;
+}
+
+// Images with loading="lazy" that Googlebot never requested: it renders in a tall but finite
+// viewport and doesn't scroll, so one far down the page, or off-screen in a carousel, stays
+// unloaded. requested: every URL Search Console lists in Page resources, loaded or not (see
+// requested.js), or null when the full list couldn't be read. Runs on the HTML as written, like
+// leaveUnloaded. Returns the URLs of the images it left out.
+export function leaveLazyNotRequested(doc, requested, baseUrl, googlebotUrl = baseUrl) {
+  if (!requested) return [];
+  const listed = new Set(requested.map(url => resolve(url, googlebotUrl)).filter(Boolean));
+  const bases = [...new Set([baseUrl, googlebotUrl])];
+  const isListed = value => bases.some(base => listed.has(httpUrl(value, base)));
+  // Its http(s) candidates, the img's own first: Googlebot requests one of them.
+  const candidates = img => {
+    const sources = img.parentElement?.localName === 'picture' ? [...img.parentElement.querySelectorAll('source')] : [];
+    return [img, ...sources]
+      .flatMap(el => [el.getAttribute('src'), ...srcsetUrls(el.getAttribute('srcset') || '')])
+      .filter(value => value && httpUrl(value, baseUrl));
+  };
+  const images = [...doc.querySelectorAll('img')].filter(img => !img.closest('noscript') && !img.hasAttribute('data-gfr-unloaded'));
+  // A list none of the page's images is in can't be told from one misread: leave everything.
+  if (!images.some(img => candidates(img).some(isListed))) return [];
+  const urls = [];
+  for (const img of images) {
+    if ((img.getAttribute('loading') || '').trim().toLowerCase() !== 'lazy') continue;
+    const values = candidates(img);
+    if (!values.length || values.some(isListed)) continue;
+    urls.push(httpUrl(values[0], baseUrl));
+    if (img.parentElement?.localName === 'picture') img.parentElement.querySelectorAll('source').forEach(source => source.remove());
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
+    img.setAttribute('src', UNLOADED_URL);
+    mark(img, 'Google never requested it: loading="lazy", outside its viewport');
+  }
+  if (urls.length) addMarkStyle(doc);
   return urls;
 }

@@ -141,9 +141,10 @@ export function mountPanelUi(shotPanel, { live, onOpen }) {
     renderNote();
   };
 
-  // What Search Console lists as not loaded, then the lazy images that never loaded.
-  const showUnloaded = ({ count, resources }, lazy) => {
-    const total = count + lazy.length;
+  // What Search Console lists as not loaded, then the lazy images that never loaded, then the
+  // loading="lazy" ones Googlebot never requested.
+  const showUnloaded = ({ count, resources }, lazy, notRequested) => {
+    const total = count + lazy.length + notRequested.length;
     unloadedButton.hidden = !total;
     if (!total) return;
     unloadedButton.textContent = `⚠ ${total} not loaded`;
@@ -160,10 +161,14 @@ export function mountPanelUi(shotPanel, { live, onOpen }) {
       ? [h('p', {}, TEXT.unloadedIntro(count)), h('ul', {}, ...resources.map(item))]
       : [h('p', {}, TEXT.unloadedUnread(count))];
     const lazyItem = url => item({ reason: TEXT.reasons.lazy, type: 'Image', url, effect: 'lazy' });
+    const notRequestedItem = url => item({ reason: TEXT.reasons.notRequested, type: 'Image', url, effect: 'shown' });
     details.replaceChildren(
       detailsClose,
       ...(count ? listed : []),
       ...(lazy.length ? [h('p', {}, TEXT.lazyIntro(lazy.length)), h('ul', {}, ...lazy.map(lazyItem))] : []),
+      ...(notRequested.length
+        ? [h('p', {}, TEXT.notRequestedIntro(notRequested.length)), h('ul', {}, ...notRequested.map(notRequestedItem))]
+        : []),
     );
   };
   // The list closes with its × button, Esc, or a click anywhere outside it.
@@ -206,11 +211,12 @@ export function mountPanelUi(shotPanel, { live, onOpen }) {
     },
     // leftOut: something was left out of the full page; unloaded: { count, resources } where each
     // resource has its effect (see leaveUnloaded), or resources is null when unreadable; lazy:
-    // URLs of lazy images that never loaded.
-    showPrepared({ leftOut: left = false, unloaded = { count: 0, resources: [] }, lazy = [] }) {
+    // URLs of lazy images that never loaded; notRequested: URLs of loading="lazy" images Googlebot
+    // never requested.
+    showPrepared({ leftOut: left = false, unloaded = { count: 0, resources: [] }, lazy = [], notRequested = [] }) {
       prepared = true;
       leftOut = left;
-      showUnloaded(unloaded, lazy);
+      showUnloaded(unloaded, lazy, notRequested);
       buttons.full.title = leftOut ? `${TEXT.views.full} · ${TEXT.views.leftOut}` : TEXT.views.full;
       setMode(mode);
     },
