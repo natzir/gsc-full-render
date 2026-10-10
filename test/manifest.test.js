@@ -18,7 +18,7 @@ describe('manifest', () => {
   it('has the store name, a description that fits the store, and the package\'s version', () => {
     expect(manifest.name).toBe('GSC Full Fetch & Render as Googlebot by Natzir');
     expect(manifest.description.length).toBeLessThanOrEqual(132);
-    expect(manifest.version).toBe('1.0.0');
+    expect(manifest.version).toBe('1.0.1');
     expect(pkg.version).toBe(manifest.version);
   });
 

@@ -120,6 +120,16 @@ describe('mountPanelUi', () => {
     expect(button(root, 'Full page').title).toBe(TEXT.views.full);
   });
 
+  it('says that the styles and images come from your browser now, not from Google', () => {
+    const { shotPanel } = buildScPage();
+    mountPanelUi(shotPanel, { live: true });
+    const root = shadow(shotPanel);
+    expect(root.querySelector('.note').textContent).toBe("Google's rendered HTML · styles and images loaded now by your browser, not by Google");
+    expect(button(root, 'Full page').title).toBe(
+      "The whole page: Google's rendered HTML, with the styles, images and fonts your browser loads now from the site, not the ones Google loaded, and no timeouts",
+    );
+  });
+
   it('keeps Screenshot when the user chose it while the render was loading', () => {
     const { shotPanel } = buildScPage();
     const ui = mountPanelUi(shotPanel, { live: true });

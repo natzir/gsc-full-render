@@ -24,6 +24,14 @@ describe('installPage', () => {
     expect(store?.textContent).toBe('GSC Full Fetch & Render as Googlebot by Natzir');
   });
 
+  it('says the HTML is Google\'s but the styles and images come from your browser', () => {
+    const doc = new DOMParser().parseFromString(installPage('javascript:void 0'), 'text/html');
+    const texts = [...doc.querySelectorAll('p')].map(p => p.textContent);
+    expect(texts).toContain(
+      "The HTML is the one Google rendered. Its styles, images and fonts are loaded now by your browser, not by Google, so the page can differ from what Google saw.",
+    );
+  });
+
   it('uses the full name for the page and the short one for the bookmark', () => {
     const doc = new DOMParser().parseFromString(installPage('javascript:void 0'), 'text/html');
     expect(doc.title).toBe('Google Search Console Full Fetch & Render');

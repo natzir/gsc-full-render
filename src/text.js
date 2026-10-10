@@ -1,7 +1,8 @@
 // Every text shown on Search Console, in English, and the reasons in plain words.
 
-// The browser loads it all, so the test's timeouts don't apply.
-const NOTE = "Rebuilt from Google's rendered HTML · loaded by your browser, no timeouts";
+// The HTML is Google's; its styles, images and fonts are not: the browser loads them now, so they
+// may differ from what Google loaded (and the test's timeouts don't apply).
+const NOTE = "Google's rendered HTML · styles and images loaded now by your browser, not by Google";
 
 export const TEXT = {
   on: 'Full render ON · click the bookmarklet again to turn it off',
@@ -17,7 +18,7 @@ export const TEXT = {
   // The two views of the Screenshot tab: button tooltips, then the note above the render.
   views: {
     google: "Google's own screenshot",
-    full: "The whole page, rebuilt from Google's rendered HTML and loaded by your browser, no timeouts",
+    full: "The whole page: Google's rendered HTML, with the styles, images and fonts your browser loads now from the site, not the ones Google loaded, and no timeouts",
     leftOut: "minus what Google can't load (see ⚠)",
   },
   notes: { leftOut: `${NOTE} · minus what Google can't load (⚠)` },
