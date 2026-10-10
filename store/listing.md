@@ -19,7 +19,7 @@ Package: `npm run pack` → `dist/gsc-full-render-<version>.zip` (only the files
 **Description:**
 
 ```
-GSC Full Fetch & Render shows the whole page Google rendered in Search Console's URL Inspection. Search Console only shows a screenshot in the live test, and it stops at about 1,750 px: the crawled page has none. The extension rebuilds the full page from the HTML Google rendered, right in the Screenshot tab, for both the live test and the crawled page.
+GSC Full Fetch & Render shows the whole page Google rendered in Search Console's URL Inspection. Search Console only shows a screenshot in the live test, and it stops at about 1,750 px; the crawled page has no screenshot at all. The extension rebuilds the full page from the HTML Google rendered, right in the Screenshot tab, for both the live test and the crawled page.
 
 It turns on by itself when you open View tested page or View crawled page. Click its icon to turn it off in that tab, or right-click the icon to switch the automatic start off and use the icon as an on/off button.
 

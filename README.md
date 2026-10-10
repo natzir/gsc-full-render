@@ -1,9 +1,9 @@
 # Google Search Console Full Fetch & Render
 
 GSC Full Render for short. A Chrome extension, and a bookmarklet, for Search Console's URL
-Inspection. Search Console only shows a screenshot in the live test, and it stops at about 1,750 px:
-the crawled page has none. This rebuilds the whole page from the HTML Google rendered, right in the
-*Screenshot* tab, and lists all its links.
+Inspection. Search Console only shows a screenshot in the live test, and it stops at about 1,750 px;
+the crawled page has no screenshot at all. This rebuilds the whole page from the HTML Google
+rendered, right in the *Screenshot* tab, and lists all its links.
 
 **What it is, and what it isn't.** The HTML is Google's: the DOM its renderer built, with the
 page's JavaScript already run. The styles, images and fonts are not: your browser loads them now
