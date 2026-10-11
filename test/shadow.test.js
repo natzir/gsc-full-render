@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { scopeShadowStyles } from '../src/shadow.js';
 
 const parse = body => new DOMParser().parseFromString(`<!DOCTYPE html><body>${body}</body>`, 'text/html');
-const scoped = (n, css) => `@scope ([data-gfr-shadow="${n}"]) to (slot, [data-gfr-shadow] > *) {\n${css}\n}`;
+const scoped = (n, css) => `@scope ([data-gfr-shadow="${n}"]) to (slot, :scope [data-gfr-shadow] > *) {\n${css}\n}`;
 
 describe('scopeShadowStyles', () => {
-  it('keeps the styles of a flattened custom element inside it', () => {
+  it('keeps the styles of a flattened component inside it', () => {
     const doc = parse('<p>page</p><x-card><style>p { color: red; }</style><p>card</p><slot><span>light</span></slot></x-card>');
     scopeShadowStyles(doc);
     expect(doc.querySelector('x-card').getAttribute('data-gfr-shadow')).toBe('1');
@@ -24,6 +24,19 @@ describe('scopeShadowStyles', () => {
     const doc = parse('<div><style>p { color: red; }</style><p>shadow</p><slot></slot></div>');
     scopeShadowStyles(doc);
     expect(doc.querySelector('div').getAttribute('data-gfr-shadow')).toBe('1');
+  });
+
+  it('keeps the styles of a plain element whose shadow root styled :host', () => {
+    const doc = parse('<div><style>:host { display: block; } p { color: red; }</style><p>shadow</p></div>');
+    scopeShadowStyles(doc);
+    expect(doc.querySelector('div').getAttribute('data-gfr-shadow')).toBe('1');
+  });
+
+  it('leaves a custom element alone whose style has no :host and that holds no slot, as light DOM components write it', () => {
+    const html = '<site-header><style>body { padding-top: 60px; }</style><nav>menu</nav></site-header>';
+    const doc = parse(html);
+    scopeShadowStyles(doc);
+    expect(doc.body.innerHTML).toBe(html);
   });
 
   it('leaves a plain element with a style and no slot alone, as Elementor writes its widgets', () => {
@@ -49,9 +62,9 @@ describe('scopeShadowStyles', () => {
   });
 
   it('numbers nested components apart, each style scoped to its own', () => {
-    const doc = parse('<x-outer><style>a { color: red; }</style><x-inner><style>b { color: blue; }</style></x-inner></x-outer>');
+    const doc = parse('<x-outer><style>a { color: red; }</style><x-inner><style>:host { color: blue; }</style></x-inner><slot></slot></x-outer>');
     scopeShadowStyles(doc);
     expect(doc.querySelector('x-outer > style').textContent).toBe(scoped(1, 'a { color: red; }'));
-    expect(doc.querySelector('x-inner > style').textContent).toBe(scoped(2, 'b { color: blue; }'));
+    expect(doc.querySelector('x-inner > style').textContent).toBe(scoped(2, ':scope { color: blue; }'));
   });
 });

@@ -142,7 +142,7 @@ describe('prepareHtml', () => {
   });
 
   it('keeps the styles of a flattened shadow root inside its host, so they do not reach the page', () => {
-    const out = prepareHtml('<p>page</p><x-card><style>p { color: red; }</style><p>card</p></x-card>', 'https://a.example/p');
+    const out = prepareHtml('<p>page</p><x-card><style>p { color: red; }</style><p>card</p><slot></slot></x-card>', 'https://a.example/p');
     expect(parse(out.html).querySelector('x-card > style').textContent).toMatch(/^@scope \(\[data-gfr-shadow="1"\]\)/);
   });
 });
