@@ -24,6 +24,7 @@
   <li><a href="wrs/?h=20000000">20,000,000 px tall</a></li>
   <li><a href="wrs/?fill=text&amp;h=1000000">1,000,000 px of real text</a> instead of empty blocks, and the same <a href="wrs/?fill=text&amp;h=1000000&amp;cv=hidden">with content-visibility: hidden</a></li>
 </ul>
+<p><a href="wrs/static.html">wrs/static.html</a>: the same reading on a static page, over 10,000 px of text all in its HTML and nothing built by script: <code>innerHeight</code> read once at the top, as the parser reaches it, then every resize.</p>
 
 <h2>How much HTML it keeps</h2>
 <p><a href="wrs/2mb.html">wrs/2mb.html</a>: a 3 MB HTML file with markers of their byte offset, to see how much of it Googlebot reads and URL Inspection shows.</p>
