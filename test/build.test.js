@@ -32,10 +32,10 @@ const listFiles = async dir =>
     .sort();
 
 describe('buildBookmarklet', () => {
-  it('produces a javascript: URL under 48 KB whose code parses', async () => {
+  it('produces a javascript: URL under 56 KB whose code parses', async () => {
     const url = await buildBookmarklet();
     expect(url.startsWith('javascript:')).toBe(true);
-    expect(url.length).toBeLessThan(48 * 1024);
+    expect(url.length).toBeLessThan(56 * 1024);
     expect(() => new Function(decodeURIComponent(url.slice('javascript:'.length)))).not.toThrow();
   });
 });

@@ -1,9 +1,11 @@
-// parse → base URLs → mark links → leave out what couldn't load → sanitise → serialise.
+// parse → base URLs → mark links → leave out what couldn't load → sanitise → scope shadow styles →
+// serialise.
 // Links are marked before sanitising so javascript: hrefs are recorded before neutralisation, and
 // what couldn't load is matched while URLs are still as written (sanitising makes them absolute).
 import { pickUrls } from './source.js';
 import { markLinks } from './links.js';
 import { sanitize } from './sanitize.js';
+import { scopeShadowStyles } from './shadow.js';
 import { leaveUnloaded, leaveLazyUnrequested, leaveLazyNotRequested } from './unloaded.js';
 import { PASS_THROUGH } from './render.js';
 
@@ -18,6 +20,7 @@ export function prepareHtml(html, inspectedUrl, policy = PASS_THROUGH, resources
   const effects = leaveUnloaded(doc, resources, baseUrl, googlebotUrl);
   const notRequested = leaveLazyNotRequested(doc, requested, baseUrl, googlebotUrl);
   const { lazy } = sanitize(doc, baseUrl);
+  scopeShadowStyles(doc);
   const unrequested = leaveLazyUnrequested(lazy, baseUrl);
   return {
     html: serialize(doc),
