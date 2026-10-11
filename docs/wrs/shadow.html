@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WRS shadow DOM and iframe test</title>
+<style>
+  body { margin: 0; padding: 0 12px; font: 16px/1.4 system-ui, sans-serif; color: #202124; }
+  pre { margin: 4px 0; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+  section { margin: 12px 0; padding: 4px 12px; border: 1px solid #999; }
+  h2 { font-size: 16px; margin: 4px 0; }
+  iframe { width: 100%; height: 90px; box-sizing: border-box; border: 1px dashed #999; }
+</style>
+</head>
+<body>
+<h1>WRS shadow DOM and iframe test</h1>
+<p>What Google's rendered HTML keeps of what isn't in the page's own DOM tree: open, closed and declarative shadow roots, the page's own text slotted into one or left out of it, and iframes of an indexable page and of a noindex one. Each part has a made-up word and a link of its own: the HTML tab of URL Inspection shows where each one ends up, and a Google search for the word whether it was indexed as part of this page. The shadow roots style their paragraphs red: if that red reaches this paragraph, their styles were taken out of the shadow root.</p>
+<pre id="status">status: script did not run</pre>
+
+<section>
+<h2>1. Open shadow root, attached by script</h2>
+<shadow-open><span>Light DOM text in the default slot: laredadizave.</span><span slot="nowhere">Light DOM text for a slot that doesn't exist, so the browser doesn't show it: pibanisinimo.</span></shadow-open>
+</section>
+
+<section>
+<h2>2. Closed shadow root, attached by script</h2>
+<shadow-closed></shadow-closed>
+</section>
+
+<section>
+<h2>3. Declarative shadow root, in the HTML</h2>
+<div id="declarative"><template shadowrootmode="open"><style>p { color: #b00; }</style><p>Declarative shadow root text: bezusukirufi. <a href="../experiments.html?from=declarative-shadow">Link in the declarative shadow root</a></p></template></div>
+</section>
+
+<section>
+<h2>4. Iframe of an indexable page</h2>
+<iframe src="frame.html" title="Indexable page in an iframe"></iframe>
+</section>
+
+<section>
+<h2>5. Iframe of a noindex page</h2>
+<iframe src="frame-noindex.html" title="Noindex page in an iframe"></iframe>
+</section>
+
+<script>
+  // The same component twice, with an open and a closed shadow root. Its style stays inside it.
+  const component = (mode, text, from) => class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode }).innerHTML = `<style>p { color: #b00; }</style><p>${text} <a href="../experiments.html?from=${from}">Link in the ${mode} shadow root</a></p><slot></slot>`;
+    }
+  };
+  customElements.define('shadow-open', component('open', 'Open shadow root text: tegifamopobo.', 'open-shadow'));
+  customElements.define('shadow-closed', component('closed', 'Closed shadow root text: simolekekuga.', 'closed-shadow'));
+
+  const status = document.getElementById('status');
+  const write = () => {
+    const frames = [...document.querySelectorAll('iframe')].map(frame => {
+      try { return `${frame.getAttribute('src')}: ${frame.contentDocument?.title || 'not loaded'}`; } catch (e) { return `${frame.getAttribute('src')}: ${e.name}`; }
+    });
+    status.textContent = `${Math.round(performance.now())} ms: open shadow root ${document.querySelector('shadow-open').shadowRoot ? 'attached' : 'missing'}; declarative shadow root ${document.getElementById('declarative').shadowRoot ? 'attached' : 'not attached'}; ${frames.join('; ')}`;
+  };
+  write();
+  addEventListener('load', write);
+</script>
+</body>
+</html>
