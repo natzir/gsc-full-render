@@ -89,6 +89,11 @@ The CSV has a column for each.
   Googlebot something different, or the site has changed since the crawl, the result can differ.
 - Search Console's HTML tab holds only the first 100,000 nodes of the rendered HTML (elements
   and pieces of text), so on a bigger page the full page ends there too.
+- Google's rendered HTML flattens each shadow root, open, closed or declarative, into its element:
+  its text and links are there, and in the list. Its `<style>` comes along too, and the full page
+  keeps it inside that component when it can tell there was a shadow root (the CSS styles `:host`,
+  or the element holds a `<slot>`); otherwise those styles reach the whole page. Components styled
+  through `adoptedStyleSheets` arrive with no styles at all.
 
 ## Disclaimer
 
