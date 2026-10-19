@@ -95,6 +95,12 @@ The CSV has a column for each.
   or the element holds a `<slot>`); otherwise those styles reach the whole page. Components styled
   through `adoptedStyleSheets` arrive with no styles at all.
 
+## Experiments
+
+The tests behind it, on [how Googlebot renders pages](https://natzir.github.io/gsc-full-render/experiments.html):
+its viewport, the lazy images it loads, how much HTML URL Inspection keeps, and what it does with
+shadow DOM and iframes.
+
 ## Disclaimer
 
 Not affiliated with Google. Google and Google Search Console are trademarks of Google LLC.
